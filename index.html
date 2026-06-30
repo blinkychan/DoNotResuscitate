@@ -1,0 +1,983 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DRM Builder — Blink49 Studios</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+  :root{
+    --paper:#f7f6f3;
+    --card:#ffffff;
+    --ink:#1c1d1f;
+    --ink-soft:#5a5c61;
+    --line:#dcdad4;
+    --accent:#1f3a5f;
+    --accent-soft:#e8edf3;
+    --danger:#9c3b3b;
+    --mono: 'JetBrains Mono', 'Courier New', monospace;
+    --sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:var(--sans);
+    line-height:1.45;
+    padding:32px 16px 80px;
+  }
+  .wrap{max-width:880px;margin:0 auto;}
+  header.page{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    border-bottom:3px solid var(--ink);
+    padding-bottom:14px;
+    margin-bottom:28px;
+  }
+  header.page .brand{
+    font-family:var(--mono);
+    font-weight:700;
+    letter-spacing:0.06em;
+    font-size:13px;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+  }
+  header.page h1{
+    margin:2px 0 0;
+    font-size:26px;
+    letter-spacing:-0.01em;
+  }
+  header.page .tag{
+    font-family:var(--mono);
+    font-size:11px;
+    color:var(--ink-soft);
+    text-align:right;
+  }
+  .section{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:6px;
+    padding:20px 22px;
+    margin-bottom:16px;
+  }
+  .section h2{
+    font-size:12px;
+    text-transform:uppercase;
+    letter-spacing:0.08em;
+    font-family:var(--mono);
+    color:var(--accent);
+    margin:0 0 14px;
+    padding-bottom:8px;
+    border-bottom:1px solid var(--line);
+  }
+  .grid{display:grid;gap:14px;}
+  .g2{grid-template-columns:1fr 1fr;}
+  .g3{grid-template-columns:1fr 1fr 1fr;}
+  .g4{grid-template-columns:1fr 1fr 1fr 1fr;}
+  @media (max-width:640px){ .g2,.g3,.g4{grid-template-columns:1fr;} }
+  label{
+    display:block;
+    font-size:11px;
+    font-weight:600;
+    text-transform:uppercase;
+    letter-spacing:0.04em;
+    color:var(--ink-soft);
+    margin-bottom:5px;
+  }
+  input[type=text], input[type=number], input[type=date], textarea, select{
+    width:100%;
+    font-family:var(--sans);
+    font-size:14px;
+    color:var(--ink);
+    padding:9px 10px;
+    border:1px solid var(--line);
+    border-radius:4px;
+    background:#fff;
+  }
+  input:focus, textarea:focus, select:focus{
+    outline:none;
+    border-color:var(--accent);
+    box-shadow:0 0 0 3px var(--accent-soft);
+  }
+  textarea{resize:vertical;min-height:70px;font-family:var(--sans);}
+  textarea.long{min-height:130px;}
+  .field{margin-bottom:0;}
+  .check-row{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    padding:7px 0;
+    font-size:14px;
+  }
+  .check-row input[type=checkbox], .check-row input[type=radio]{
+    width:16px;height:16px;accent-color:var(--accent);flex-shrink:0;cursor:pointer;
+  }
+  .check-row label{
+    margin:0;text-transform:none;letter-spacing:0;font-weight:500;font-size:14px;color:var(--ink);
+    cursor:pointer;
+  }
+  .check-row.with-input{flex-wrap:wrap;}
+  .check-row.with-input input[type=text]{
+    flex:1;min-width:140px;margin-left:4px;padding:5px 8px;font-size:13px;
+  }
+  .check-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:0 18px;
+  }
+  @media (max-width:640px){ .check-grid{grid-template-columns:1fr;} }
+  .hint{
+    font-size:12px;
+    color:var(--ink-soft);
+    margin-top:6px;
+    font-style:italic;
+  }
+  /* Reps */
+  .rep-card{
+    border:1px solid var(--line);
+    border-radius:5px;
+    padding:14px 16px;
+    margin-bottom:10px;
+    background:#fbfaf8;
+    position:relative;
+  }
+  .rep-card .rep-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:10px;
+  }
+  .rep-type-pill{
+    font-family:var(--mono);
+    font-size:10px;
+    text-transform:uppercase;
+    letter-spacing:0.05em;
+    background:var(--accent-soft);
+    color:var(--accent);
+    padding:3px 8px;
+    border-radius:3px;
+    font-weight:700;
+  }
+  .remove-btn{
+    background:none;
+    border:none;
+    color:var(--danger);
+    font-size:12px;
+    cursor:pointer;
+    font-family:var(--mono);
+    text-decoration:underline;
+    padding:2px;
+  }
+  .rep-fields{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;}
+  @media (max-width:640px){ .rep-fields{grid-template-columns:1fr 1fr;} }
+  .add-rep-row{display:flex;gap:8px;align-items:center;margin-top:4px;flex-wrap:wrap;}
+  .add-rep-row select{width:auto;min-width:140px;}
+  .empty-note{
+    font-size:13px;color:var(--ink-soft);font-style:italic;padding:6px 0 12px;
+  }
+  button.btn{
+    font-family:var(--mono);
+    font-size:12px;
+    text-transform:uppercase;
+    letter-spacing:0.05em;
+    font-weight:700;
+    padding:9px 16px;
+    border-radius:4px;
+    border:1px solid var(--accent);
+    background:var(--accent);
+    color:#fff;
+    cursor:pointer;
+  }
+  button.btn.secondary{
+    background:#fff;color:var(--accent);
+  }
+  button.btn.ghost{
+    background:none;border:1px solid var(--line);color:var(--ink-soft);
+  }
+  button.btn:hover{opacity:0.88;}
+  .jv-block{display:none;margin-top:12px;padding-top:12px;border-top:1px dashed var(--line);}
+  .jv-block.show{display:block;}
+  .footer-actions{
+    position:sticky;
+    bottom:0;
+    background:var(--paper);
+    padding:16px 0 4px;
+    display:flex;
+    gap:10px;
+    justify-content:flex-end;
+    border-top:1px solid var(--line);
+    margin-top:8px;
+    flex-wrap:wrap;
+  }
+  .footer-actions .left{margin-right:auto;display:flex;gap:10px;}
+  #fileInput{display:none;}
+  .status{
+    font-size:12px;color:var(--ink-soft);font-family:var(--mono);
+    align-self:center;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="page">
+    <div>
+      <div class="brand">Business &amp; Legal Affairs</div>
+      <h1>Deal Request Memo — Scripted</h1>
+    </div>
+    <div class="tag">DRM Builder<br>v1</div>
+  </header>
+
+  <!-- HEADER INFO -->
+  <div class="section">
+    <h2>Memo Info</h2>
+    <div class="grid g3">
+      <div class="field">
+        <label for="f_date">Date</label>
+        <input type="date" id="f_date">
+      </div>
+      <div class="field">
+        <label for="f_creative">Creative Exec(s)</label>
+        <input type="text" id="f_creative" placeholder="e.g. LT">
+      </div>
+      <div class="field">
+        <label for="f_ba">BA Exec(s)</label>
+        <input type="text" id="f_ba">
+      </div>
+    </div>
+  </div>
+
+  <!-- PROJECT -->
+  <div class="section">
+    <h2>Project</h2>
+    <div class="grid g2">
+      <div class="field">
+        <label for="f_project">Project Name</label>
+        <input type="text" id="f_project">
+      </div>
+      <div class="field">
+        <label for="f_artist">Artist / Entity to Contract For</label>
+        <input type="text" id="f_artist">
+      </div>
+    </div>
+    <div class="grid g3" style="margin-top:14px;">
+      <div class="field">
+        <label for="f_union">Union Membership (CAD &amp; US)</label>
+        <input type="text" id="f_union">
+      </div>
+      <div class="field">
+        <label for="f_citizenship">Citizenship</label>
+        <input type="text" id="f_citizenship">
+      </div>
+      <div class="field">
+        <label for="f_residency">Residency</label>
+        <input type="text" id="f_residency">
+      </div>
+    </div>
+
+    <div class="grid g2" style="margin-top:14px;">
+      <div class="field">
+        <label>Intended Initial Market</label>
+        <div class="check-row"><input type="checkbox" id="m_cad"><label for="m_cad">CAD</label></div>
+        <div class="check-row"><input type="checkbox" id="m_us"><label for="m_us">US</label></div>
+        <div class="check-row with-input">
+          <input type="checkbox" id="m_other"><label for="m_other">Other:</label>
+          <input type="text" id="m_other_text">
+        </div>
+      </div>
+      <div class="field">
+        <label>Genre / Length</label>
+        <div class="check-row"><input type="checkbox" id="g_half"><label for="g_half">½ Hr</label></div>
+        <div class="check-row"><input type="checkbox" id="g_one"><label for="g_one">1 Hr</label></div>
+        <div class="check-row"><input type="checkbox" id="g_mow"><label for="g_mow">MOW</label></div>
+        <div class="check-row with-input">
+          <input type="checkbox" id="g_limited"><label for="g_limited">Limited — # of eps:</label>
+          <input type="text" id="g_eps" style="max-width:70px;">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ARTIST REPS -->
+  <div class="section">
+    <h2>Artist Reps</h2>
+    <div id="repsList"></div>
+    <div class="empty-note" id="repsEmpty">No reps added yet.</div>
+    <div class="add-rep-row">
+      <select id="repTypeSelect">
+        <option value="Agent">Agent</option>
+        <option value="Manager">Manager</option>
+        <option value="Lawyer">Lawyer</option>
+      </select>
+      <button class="btn secondary" type="button" onclick="addRep()">+ Add Rep</button>
+    </div>
+    <div class="hint">Add as many as apply — one agent, three agents, a manager and a lawyer, whatever the actual deal looks like. Leave it empty if there's no rep info yet.</div>
+  </div>
+
+  <!-- DEAL TYPE / ROLE / SERVICES -->
+  <div class="section">
+    <h2>Deal Type</h2>
+    <div class="check-grid">
+      <div class="check-row"><input type="checkbox" id="dt_ifcome"><label for="dt_ifcome">If/Come</label></div>
+      <div class="check-row"><input type="checkbox" id="dt_devwith"><label for="dt_devwith">Dev. Commitment (with $)</label></div>
+      <div class="check-row"><input type="checkbox" id="dt_devwithout"><label for="dt_devwithout">Dev. Commitment (w/out $)</label></div>
+      <div class="check-row"><input type="checkbox" id="dt_shopping"><label for="dt_shopping">Shopping Agmt</label></div>
+      <div class="check-row"><input type="checkbox" id="dt_optlit"><label for="dt_optlit">Option (Literary)</label></div>
+      <div class="check-row"><input type="checkbox" id="dt_optlife"><label for="dt_optlife">Option (Life Rights)</label></div>
+      <div class="check-row"><input type="checkbox" id="dt_optscript"><label for="dt_optscript">Option (Script)</label></div>
+      <div class="check-row"><input type="checkbox" id="dt_firstlook"><label for="dt_firstlook">First Look</label></div>
+      <div class="check-row"><input type="checkbox" id="dt_overall"><label for="dt_overall">Overall</label></div>
+      <div class="check-row"><input type="checkbox" id="dt_blind"><label for="dt_blind">Blind Script</label></div>
+    </div>
+    <div class="check-row with-input">
+      <input type="checkbox" id="dt_other"><label for="dt_other">Other:</label>
+      <input type="text" id="dt_other_text">
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>Role</h2>
+    <div class="check-grid">
+      <div class="check-row"><input type="checkbox" id="r_showrunner"><label for="r_showrunner">Showrunner</label></div>
+      <div class="check-row"><input type="checkbox" id="r_wep"><label for="r_wep">WEP</label></div>
+      <div class="check-row"><input type="checkbox" id="r_nwep"><label for="r_nwep">NWEP</label></div>
+      <div class="check-row"><input type="checkbox" id="r_pilotdir"><label for="r_pilotdir">Pilot Director</label></div>
+      <div class="check-row"><input type="checkbox" id="r_actor"><label for="r_actor">Actor</label></div>
+      <div class="check-row"><input type="checkbox" id="r_scriptsup"><label for="r_scriptsup">Script Supervisor</label></div>
+      <div class="check-row"><input type="checkbox" id="r_producer"><label for="r_producer">Producer</label></div>
+      <div class="check-row"><input type="checkbox" id="r_consultant"><label for="r_consultant">Consultant</label></div>
+    </div>
+    <div class="check-row with-input">
+      <input type="checkbox" id="r_other"><label for="r_other">Other:</label>
+      <input type="text" id="r_other_text">
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>Services / Steps</h2>
+    <div class="check-grid">
+      <div class="check-row"><input type="checkbox" id="s_pitch"><label for="s_pitch">Pitch Document</label></div>
+      <div class="check-row"><input type="checkbox" id="s_pilotwga"><label for="s_pilotwga">Pilot Script (WGA)</label></div>
+      <div class="check-row"><input type="checkbox" id="s_pilotwgc"><label for="s_pilotwgc">Pilot Script (WGC)</label></div>
+      <div class="check-row"><input type="checkbox" id="s_formatwga"><label for="s_formatwga">Format (WGA)</label></div>
+      <div class="check-row"><input type="checkbox" id="s_biblewga"><label for="s_biblewga">Bible (WGA)</label></div>
+      <div class="check-row"><input type="checkbox" id="s_biblewgc"><label for="s_biblewgc">Bible (WGC)</label></div>
+      <div class="check-row"><input type="checkbox" id="s_polish"><label for="s_polish">Polish</label></div>
+      <div class="check-row"><input type="checkbox" id="s_rewrite"><label for="s_rewrite">Pilot Rewrite</label></div>
+      <div class="check-row"><input type="checkbox" id="s_backup"><label for="s_backup">Backup Script</label></div>
+    </div>
+    <div class="check-row with-input">
+      <input type="checkbox" id="s_other"><label for="s_other">Other:</label>
+      <input type="text" id="s_other_text">
+    </div>
+  </div>
+
+  <!-- NOTES SECTIONS -->
+  <div class="section">
+    <h2>Deadlines &amp; Attendance</h2>
+    <div class="field" style="margin-bottom:14px;">
+      <label for="f_deadlines">Deadlines to Be Aware Of</label>
+      <textarea id="f_deadlines"></textarea>
+    </div>
+    <div class="field">
+      <label for="f_attendance">People in Attendance at Initial Pitch to B49</label>
+      <textarea id="f_attendance"></textarea>
+    </div>
+  </div>
+
+  <!-- JV -->
+  <div class="section">
+    <h2>JV Project</h2>
+    <div class="check-row"><input type="radio" name="jv" id="jv_no" value="no" checked><label for="jv_no">No</label></div>
+    <div class="check-row"><input type="radio" name="jv" id="jv_yes" value="yes"><label for="jv_yes">Yes</label></div>
+    <div class="jv-block" id="jvBlock">
+      <label>List JV(s)</label>
+      <div class="check-grid" id="jvList"></div>
+      <div class="check-row with-input">
+        <input type="checkbox" id="jv_other"><label for="jv_other">Other:</label>
+        <input type="text" id="jv_other_text">
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>Auspices Already Attached</h2>
+    <div class="field">
+      <label for="f_auspices">Producers, Overalls/First Looks, etc.</label>
+      <textarea id="f_auspices"></textarea>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>Comparable Deals / Fee Range</h2>
+    <div class="field">
+      <label for="f_comps">If Known</label>
+      <textarea id="f_comps"></textarea>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>Additional Notes</h2>
+    <div class="field">
+      <label for="f_notes">Notes</label>
+      <textarea class="long" id="f_notes"></textarea>
+    </div>
+  </div>
+
+  <div class="footer-actions">
+    <div class="left">
+      <button class="btn ghost" type="button" onclick="document.getElementById('fileInput').click()">Load Draft</button>
+      <button class="btn ghost" type="button" onclick="saveDraft()">Save Draft</button>
+      <input type="file" id="fileInput" accept="application/json" onchange="loadDraft(event)">
+    </div>
+    <span class="status" id="statusMsg"></span>
+    <button class="btn" type="button" onclick="generatePDF()">Generate PDF</button>
+  </div>
+
+</div>
+
+<script>
+const JV_OPTIONS = [
+  "Lawrence Grey","Project 10","Transatlantic","Vanguarde","Iron Ocean",
+  "National Lampoon","Joel Wyman","Piller/Segan","RankinFile","Belletrist",
+  "Electric Ave","Punctuation Media","Bell Media"
+];
+
+// ---------- Reps ----------
+let reps = [];
+let repIdCounter = 0;
+
+function addRep(){
+  const type = document.getElementById('repTypeSelect').value;
+  reps.push({ id: repIdCounter++, type, name:'', company:'', phone:'', email:'' });
+  renderReps();
+}
+function removeRep(id){
+  reps = reps.filter(r => r.id !== id);
+  renderReps();
+}
+function updateRep(id, field, value){
+  const rep = reps.find(r => r.id === id);
+  if(rep) rep[field] = value;
+}
+function renderReps(){
+  const list = document.getElementById('repsList');
+  const empty = document.getElementById('repsEmpty');
+  list.innerHTML = '';
+  empty.style.display = reps.length ? 'none' : 'block';
+  reps.forEach(rep => {
+    const card = document.createElement('div');
+    card.className = 'rep-card';
+    card.innerHTML = `
+      <div class="rep-header">
+        <span class="rep-type-pill">${rep.type}</span>
+        <button class="remove-btn" type="button" onclick="removeRep(${rep.id})">Remove</button>
+      </div>
+      <div class="rep-fields">
+        <div class="field"><label>Name</label><input type="text" value="${escapeAttr(rep.name)}" oninput="updateRep(${rep.id},'name',this.value)"></div>
+        <div class="field"><label>${rep.type === 'Lawyer' ? 'Law Firm' : 'Company'}</label><input type="text" value="${escapeAttr(rep.company)}" oninput="updateRep(${rep.id},'company',this.value)"></div>
+        <div class="field"><label>Phone</label><input type="text" value="${escapeAttr(rep.phone)}" oninput="updateRep(${rep.id},'phone',this.value)"></div>
+        <div class="field"><label>Email</label><input type="text" value="${escapeAttr(rep.email)}" oninput="updateRep(${rep.id},'email',this.value)"></div>
+      </div>
+    `;
+    list.appendChild(card);
+  });
+}
+function escapeAttr(s){
+  return (s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
+}
+
+// ---------- JV list ----------
+function renderJVOptions(){
+  const wrap = document.getElementById('jvList');
+  wrap.innerHTML = JV_OPTIONS.map((name,i) => `
+    <div class="check-row">
+      <input type="checkbox" id="jv_opt_${i}" data-jv="${escapeAttr(name)}">
+      <label for="jv_opt_${i}">${name}</label>
+    </div>
+  `).join('');
+}
+renderJVOptions();
+
+document.getElementById('jv_yes').addEventListener('change', toggleJV);
+document.getElementById('jv_no').addEventListener('change', toggleJV);
+function toggleJV(){
+  document.getElementById('jvBlock').classList.toggle('show', document.getElementById('jv_yes').checked);
+}
+
+// ---------- Draft save/load ----------
+function collectData(){
+  const val = id => document.getElementById(id).value;
+  const chk = id => document.getElementById(id).checked;
+
+  const jvSelected = JV_OPTIONS.filter((name,i) => chk(`jv_opt_${i}`));
+
+  return {
+    date: val('f_date'), creative: val('f_creative'), ba: val('f_ba'),
+    project: val('f_project'), artist: val('f_artist'),
+    union: val('f_union'), citizenship: val('f_citizenship'), residency: val('f_residency'),
+    market: { cad: chk('m_cad'), us: chk('m_us'), other: chk('m_other'), otherText: val('m_other_text') },
+    genre: { half: chk('g_half'), one: chk('g_one'), mow: chk('g_mow'), limited: chk('g_limited'), eps: val('g_eps') },
+    reps: reps,
+    dealType: {
+      ifcome: chk('dt_ifcome'), devwith: chk('dt_devwith'), devwithout: chk('dt_devwithout'),
+      shopping: chk('dt_shopping'), optlit: chk('dt_optlit'), optlife: chk('dt_optlife'),
+      optscript: chk('dt_optscript'), firstlook: chk('dt_firstlook'), overall: chk('dt_overall'),
+      blind: chk('dt_blind'), other: chk('dt_other'), otherText: val('dt_other_text')
+    },
+    role: {
+      showrunner: chk('r_showrunner'), wep: chk('r_wep'), nwep: chk('r_nwep'),
+      pilotdir: chk('r_pilotdir'), actor: chk('r_actor'), scriptsup: chk('r_scriptsup'),
+      producer: chk('r_producer'), consultant: chk('r_consultant'),
+      other: chk('r_other'), otherText: val('r_other_text')
+    },
+    services: {
+      pitch: chk('s_pitch'), pilotwga: chk('s_pilotwga'), pilotwgc: chk('s_pilotwgc'),
+      formatwga: chk('s_formatwga'), biblewga: chk('s_biblewga'), biblewgc: chk('s_biblewgc'),
+      polish: chk('s_polish'), rewrite: chk('s_rewrite'), backup: chk('s_backup'),
+      other: chk('s_other'), otherText: val('s_other_text')
+    },
+    deadlines: val('f_deadlines'), attendance: val('f_attendance'),
+    jv: { yes: chk('jv_yes'), selected: jvSelected, other: chk('jv_other'), otherText: val('jv_other_text') },
+    auspices: val('f_auspices'), comps: val('f_comps'), notes: val('f_notes')
+  };
+}
+
+function saveDraft(){
+  const data = collectData();
+  const blob = new Blob([JSON.stringify(data, null, 2)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  const projectSlug = (data.project || 'untitled').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'');
+  a.download = `drm-draft-${projectSlug || 'untitled'}.json`;
+  a.click();
+  setStatus('Draft saved.');
+}
+
+function loadDraft(evt){
+  const file = evt.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try{
+      const data = JSON.parse(e.target.result);
+      applyData(data);
+      setStatus('Draft loaded.');
+    }catch(err){
+      setStatus('Could not read that file.');
+    }
+  };
+  reader.readAsText(file);
+  evt.target.value = '';
+}
+
+function applyData(d){
+  const set = (id,v) => { const el = document.getElementById(id); if(el) el.value = v || ''; };
+  const setChk = (id,v) => { const el = document.getElementById(id); if(el) el.checked = !!v; };
+
+  set('f_date', d.date); set('f_creative', d.creative); set('f_ba', d.ba);
+  set('f_project', d.project); set('f_artist', d.artist);
+  set('f_union', d.union); set('f_citizenship', d.citizenship); set('f_residency', d.residency);
+
+  if(d.market){
+    setChk('m_cad', d.market.cad); setChk('m_us', d.market.us);
+    setChk('m_other', d.market.other); set('m_other_text', d.market.otherText);
+  }
+  if(d.genre){
+    setChk('g_half', d.genre.half); setChk('g_one', d.genre.one);
+    setChk('g_mow', d.genre.mow); setChk('g_limited', d.genre.limited); set('g_eps', d.genre.eps);
+  }
+
+  reps = (d.reps || []).map(r => ({...r, id: repIdCounter++}));
+  renderReps();
+
+  if(d.dealType){
+    setChk('dt_ifcome', d.dealType.ifcome); setChk('dt_devwith', d.dealType.devwith);
+    setChk('dt_devwithout', d.dealType.devwithout); setChk('dt_shopping', d.dealType.shopping);
+    setChk('dt_optlit', d.dealType.optlit); setChk('dt_optlife', d.dealType.optlife);
+    setChk('dt_optscript', d.dealType.optscript); setChk('dt_firstlook', d.dealType.firstlook);
+    setChk('dt_overall', d.dealType.overall); setChk('dt_blind', d.dealType.blind);
+    setChk('dt_other', d.dealType.other); set('dt_other_text', d.dealType.otherText);
+  }
+  if(d.role){
+    setChk('r_showrunner', d.role.showrunner); setChk('r_wep', d.role.wep);
+    setChk('r_nwep', d.role.nwep); setChk('r_pilotdir', d.role.pilotdir);
+    setChk('r_actor', d.role.actor); setChk('r_scriptsup', d.role.scriptsup);
+    setChk('r_producer', d.role.producer); setChk('r_consultant', d.role.consultant);
+    setChk('r_other', d.role.other); set('r_other_text', d.role.otherText);
+  }
+  if(d.services){
+    setChk('s_pitch', d.services.pitch); setChk('s_pilotwga', d.services.pilotwga);
+    setChk('s_pilotwgc', d.services.pilotwgc); setChk('s_formatwga', d.services.formatwga);
+    setChk('s_biblewga', d.services.biblewga); setChk('s_biblewgc', d.services.biblewgc);
+    setChk('s_polish', d.services.polish); setChk('s_rewrite', d.services.rewrite);
+    setChk('s_backup', d.services.backup); setChk('s_other', d.services.other);
+    set('s_other_text', d.services.otherText);
+  }
+
+  set('f_deadlines', d.deadlines); set('f_attendance', d.attendance);
+
+  if(d.jv){
+    setChk('jv_yes', d.jv.yes); setChk('jv_no', !d.jv.yes);
+    toggleJV();
+    JV_OPTIONS.forEach((name,i) => {
+      setChk(`jv_opt_${i}`, (d.jv.selected||[]).includes(name));
+    });
+    setChk('jv_other', d.jv.other); set('jv_other_text', d.jv.otherText);
+  }
+
+  set('f_auspices', d.auspices); set('f_comps', d.comps); set('f_notes', d.notes);
+}
+
+function setStatus(msg){
+  const el = document.getElementById('statusMsg');
+  el.textContent = msg;
+  setTimeout(() => { if(el.textContent === msg) el.textContent = ''; }, 3500);
+}
+
+// ---------- PDF generation ----------
+function generatePDF(){
+  const d = collectData();
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit: 'pt', format: 'letter' });
+
+  const margin = 48;
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const pageHeight = doc.internal.pageSize.getHeight();
+  const contentWidth = pageWidth - margin * 2;
+  let y = margin;
+
+  function ensureSpace(h){
+    if(y + h > pageHeight - margin){
+      doc.addPage();
+      y = margin;
+    }
+  }
+
+  function header(){
+    doc.setFont('helvetica','bold');
+    doc.setFontSize(9);
+    doc.setTextColor(90,90,90);
+    doc.text('BUSINESS AND LEGAL AFFAIRS', margin, y);
+    doc.text('DEAL REQUEST MEMO - SCRIPTED', pageWidth - margin, y, { align:'right' });
+    y += 22;
+    doc.setDrawColor(20,20,20);
+    doc.setLineWidth(1.4);
+    doc.line(margin, y, pageWidth - margin, y);
+    y += 18;
+
+    doc.setTextColor(20,20,20);
+    doc.setFontSize(10);
+    doc.setFont('helvetica','normal');
+    const metaLine = `Date: ${d.date || '—'}      Creative Exec(s): ${d.creative || '—'}      BA Exec(s): ${d.ba || '—'}`;
+    doc.text(metaLine, margin, y);
+    y += 22;
+  }
+
+  function sectionTitle(title){
+    ensureSpace(26);
+    doc.setFont('helvetica','bold');
+    doc.setFontSize(10.5);
+    doc.setTextColor(31,58,95);
+    doc.text(title.toUpperCase(), margin, y);
+    y += 5;
+    doc.setDrawColor(220,218,212);
+    doc.setLineWidth(0.7);
+    doc.line(margin, y, pageWidth - margin, y);
+    y += 14;
+    doc.setTextColor(20,20,20);
+  }
+
+  function labelValue(label, value, x, width){
+    doc.setFont('helvetica','bold');
+    doc.setFontSize(8.5);
+    doc.setTextColor(90,90,90);
+    doc.text(label.toUpperCase(), x, y);
+    doc.setFont('helvetica','normal');
+    doc.setFontSize(10);
+    doc.setTextColor(20,20,20);
+    const lines = doc.splitTextToSize(value || '—', width);
+    doc.text(lines, x, y + 12);
+    return lines.length;
+  }
+
+  function fieldRow(fields){
+    // fields: [{label, value}]
+    const colWidth = contentWidth / fields.length - 10;
+    ensureSpace(34);
+    let maxLines = 1;
+    fields.forEach((f, i) => {
+      const x = margin + i * (colWidth + 10);
+      const lines = labelValue(f.label, f.value, x, colWidth);
+      maxLines = Math.max(maxLines, lines);
+    });
+    y += 12 + maxLines * 12 + 10;
+  }
+
+  function checkbox(x, yPos, checked){
+    doc.setDrawColor(60,60,60);
+    doc.setLineWidth(0.8);
+    doc.rect(x, yPos - 8, 9, 9);
+    if(checked){
+      doc.setLineWidth(1.1);
+      doc.line(x+1.5, yPos-4, x+3.5, yPos-1.5);
+      doc.line(x+3.5, yPos-1.5, x+7.5, yPos-7.5);
+    }
+  }
+
+  function checkboxLine(label, checked, x, width){
+    doc.setFont('helvetica','normal');
+    doc.setFontSize(10);
+    doc.setTextColor(20,20,20);
+    checkbox(x, y, checked);
+    doc.text(label, x + 14, y);
+    return width;
+  }
+
+  function checkboxGrid(items, perRow){
+    perRow = perRow || 2;
+    const colWidth = contentWidth / perRow;
+    ensureSpace(18 * Math.ceil(items.length / perRow) + 4);
+    items.forEach((item, i) => {
+      const col = i % perRow;
+      const row = Math.floor(i / perRow);
+      const x = margin + col * colWidth;
+      const rowY = y + row * 17;
+      if(rowY > pageHeight - margin - 10){
+        // overflow handling simplified: caller should keep grids modest in length
+      }
+      checkbox(x, rowY, item.checked);
+      doc.setFont('helvetica','normal');
+      doc.setFontSize(10);
+      doc.setTextColor(20,20,20);
+      doc.text(item.label, x + 14, rowY);
+    });
+    y += 17 * Math.ceil(items.length / perRow) + 8;
+  }
+
+  function checkboxWithText(label, checked, text){
+    ensureSpace(18);
+    checkbox(margin, y, checked);
+    doc.setFont('helvetica','normal');
+    doc.setFontSize(10);
+    doc.text(label, margin + 14, y);
+    const labelW = doc.getTextWidth(label) + 18;
+    doc.setDrawColor(180,180,180);
+    doc.setLineWidth(0.5);
+    doc.line(margin + labelW, y + 2, pageWidth - margin, y + 2);
+    if(text){
+      doc.setFont('helvetica','italic');
+      doc.text(text, margin + labelW + 4, y);
+    }
+    y += 20;
+  }
+
+  function longText(label, value){
+    ensureSpace(16);
+    doc.setFont('helvetica','bold');
+    doc.setFontSize(8.5);
+    doc.setTextColor(90,90,90);
+    doc.text(label.toUpperCase(), margin, y);
+    y += 12;
+    doc.setFont('helvetica','normal');
+    doc.setFontSize(10);
+    doc.setTextColor(20,20,20);
+    const lines = doc.splitTextToSize(value && value.trim() ? value : '—', contentWidth);
+    lines.forEach(line => {
+      ensureSpace(14);
+      doc.text(line, margin, y);
+      y += 13.5;
+    });
+    y += 8;
+  }
+
+  // ---- Build document ----
+  header();
+
+  sectionTitle('Project');
+  fieldRow([
+    { label:'Project Name', value: d.project },
+    { label:'Artist / Entity to Contract For', value: d.artist }
+  ]);
+  fieldRow([
+    { label:'Union Membership', value: d.union },
+    { label:'Citizenship', value: d.citizenship },
+    { label:'Residency', value: d.residency }
+  ]);
+
+  ensureSpace(20);
+  const marketItems = [
+    { label:'CAD', checked: d.market.cad },
+    { label:'US', checked: d.market.us },
+    { label: d.market.otherText ? `Other: ${d.market.otherText}` : 'Other', checked: d.market.other }
+  ];
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(8.5);
+  doc.setTextColor(90,90,90);
+  doc.text('INTENDED INITIAL MARKET', margin, y);
+  y += 14;
+  checkboxGrid(marketItems, 3);
+
+  const genreEpsLabel = d.genre.eps ? `Limited — # of eps: ${d.genre.eps}` : 'Limited';
+  const genreItems = [
+    { label:'½ Hr', checked: d.genre.half },
+    { label:'1 Hr', checked: d.genre.one },
+    { label:'MOW', checked: d.genre.mow },
+    { label: genreEpsLabel, checked: d.genre.limited }
+  ];
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(8.5);
+  doc.setTextColor(90,90,90);
+  ensureSpace(14);
+  doc.text('GENRE / LENGTH', margin, y);
+  y += 14;
+  checkboxGrid(genreItems, 2);
+
+  // Artist reps
+  sectionTitle('Artist Reps');
+  if(!d.reps.length){
+    doc.setFont('helvetica','italic');
+    doc.setFontSize(10);
+    doc.setTextColor(120,120,120);
+    ensureSpace(16);
+    doc.text('No reps listed.', margin, y);
+    y += 18;
+  } else {
+    d.reps.forEach(rep => {
+      ensureSpace(40);
+      doc.setFont('helvetica','bold');
+      doc.setFontSize(9.5);
+      doc.setTextColor(31,58,95);
+      doc.text(rep.type.toUpperCase(), margin, y);
+      y += 13;
+      const companyLabel = rep.type === 'Lawyer' ? 'Law Firm' : 'Company';
+      fieldRow([
+        { label:'Name', value: rep.name },
+        { label: companyLabel, value: rep.company },
+        { label:'Phone', value: rep.phone },
+        { label:'Email', value: rep.email }
+      ]);
+    });
+  }
+
+  // Deal type
+  sectionTitle('Deal Type');
+  checkboxGrid([
+    { label:'If/Come', checked: d.dealType.ifcome },
+    { label:'Dev. Commitment (with $)', checked: d.dealType.devwith },
+    { label:'Dev. Commitment (w/out $)', checked: d.dealType.devwithout },
+    { label:'Shopping Agmt', checked: d.dealType.shopping },
+    { label:'Option (Literary)', checked: d.dealType.optlit },
+    { label:'Option (Life Rights)', checked: d.dealType.optlife },
+    { label:'Option (Script)', checked: d.dealType.optscript },
+    { label:'First Look', checked: d.dealType.firstlook },
+    { label:'Overall', checked: d.dealType.overall },
+    { label:'Blind Script', checked: d.dealType.blind }
+  ], 2);
+  checkboxWithText('Other:', d.dealType.other, d.dealType.otherText);
+
+  // Role
+  sectionTitle('Role');
+  checkboxGrid([
+    { label:'Showrunner', checked: d.role.showrunner },
+    { label:'WEP', checked: d.role.wep },
+    { label:'NWEP', checked: d.role.nwep },
+    { label:'Pilot Director', checked: d.role.pilotdir },
+    { label:'Actor', checked: d.role.actor },
+    { label:'Script Supervisor', checked: d.role.scriptsup },
+    { label:'Producer', checked: d.role.producer },
+    { label:'Consultant', checked: d.role.consultant }
+  ], 2);
+  checkboxWithText('Other:', d.role.other, d.role.otherText);
+
+  // Services
+  sectionTitle('Services / Steps');
+  checkboxGrid([
+    { label:'Pitch Document', checked: d.services.pitch },
+    { label:'Pilot Script (WGA)', checked: d.services.pilotwga },
+    { label:'Pilot Script (WGC)', checked: d.services.pilotwgc },
+    { label:'Format (WGA)', checked: d.services.formatwga },
+    { label:'Bible (WGA)', checked: d.services.biblewga },
+    { label:'Bible (WGC)', checked: d.services.biblewgc },
+    { label:'Polish', checked: d.services.polish },
+    { label:'Pilot Rewrite', checked: d.services.rewrite },
+    { label:'Backup Script', checked: d.services.backup }
+  ], 2);
+  checkboxWithText('Other:', d.services.other, d.services.otherText);
+
+  // Deadlines / attendance
+  sectionTitle('Deadlines & Attendance');
+  longText('Deadlines to Be Aware Of', d.deadlines);
+  longText('People in Attendance at Initial Pitch to B49', d.attendance);
+
+  // JV
+  sectionTitle('JV Project');
+  ensureSpace(18);
+  checkbox(margin, y, !d.jv.yes);
+  doc.setFont('helvetica','normal');
+  doc.setFontSize(10);
+  doc.text('No', margin + 14, y);
+  checkbox(margin + 70, y, d.jv.yes);
+  doc.text('Yes', margin + 84, y);
+  y += 20;
+  if(d.jv.yes){
+    const jvList = d.jv.selected.slice();
+    if(d.jv.other && d.jv.otherText) jvList.push(`Other: ${d.jv.otherText}`);
+    else if(d.jv.other) jvList.push('Other');
+    if(jvList.length){
+      doc.setFont('helvetica','bold');
+      doc.setFontSize(8.5);
+      doc.setTextColor(90,90,90);
+      ensureSpace(14);
+      doc.text('LIST JV', margin, y);
+      y += 12;
+      doc.setFont('helvetica','normal');
+      doc.setFontSize(10);
+      doc.setTextColor(20,20,20);
+      const text = jvList.join('  •  ');
+      const lines = doc.splitTextToSize(text, contentWidth);
+      lines.forEach(line => { ensureSpace(14); doc.text(line, margin, y); y += 13.5; });
+      y += 6;
+    } else {
+      doc.setFont('helvetica','italic');
+      doc.setFontSize(10);
+      doc.setTextColor(120,120,120);
+      ensureSpace(14);
+      doc.text('Marked yes, but no JV partner selected.', margin, y);
+      y += 18;
+    }
+  }
+
+  // Auspices / comps / notes
+  sectionTitle('Auspices Already Attached');
+  longText('Producers, Overalls/First Looks, etc.', d.auspices);
+
+  sectionTitle('Comparable Deals / Fee Range');
+  longText('If Known', d.comps);
+
+  sectionTitle('Additional Notes');
+  longText('Notes', d.notes);
+
+  // Footer page numbers
+  const pageCount = doc.internal.getNumberOfPages();
+  for(let i = 1; i <= pageCount; i++){
+    doc.setPage(i);
+    doc.setFont('helvetica','normal');
+    doc.setFontSize(8);
+    doc.setTextColor(150,150,150);
+    doc.text(`Page ${i} of ${pageCount}`, pageWidth - margin, pageHeight - 24, { align:'right' });
+    doc.text((d.project || 'Untitled Project') + ' — DRM', margin, pageHeight - 24);
+  }
+
+  const slug = (d.project || 'untitled-project').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'');
+  doc.save(`DRM-${slug || 'untitled'}.pdf`);
+  setStatus('PDF generated.');
+}
+
+// init
+renderReps();
+</script>
+</body>
+</html>
