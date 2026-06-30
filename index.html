@@ -283,6 +283,10 @@
         <div class="check-row"><input type="checkbox" id="m_cad"><label for="m_cad">CAD</label></div>
         <div class="check-row"><input type="checkbox" id="m_us"><label for="m_us">US</label></div>
         <div class="check-row with-input">
+          <input type="checkbox" id="m_global"><label for="m_global">Global Streamer / International:</label>
+          <input type="text" id="m_global_text">
+        </div>
+        <div class="check-row with-input">
           <input type="checkbox" id="m_other"><label for="m_other">Other:</label>
           <input type="text" id="m_other_text">
         </div>
@@ -296,6 +300,41 @@
           <input type="checkbox" id="g_limited"><label for="g_limited">Limited — # of eps:</label>
           <input type="text" id="g_eps" style="max-width:70px;">
         </div>
+      </div>
+    </div>
+
+    <div class="field" style="margin-top:14px;">
+      <label>Blink49 Role</label>
+      <div class="check-grid">
+        <div class="check-row"><input type="radio" name="b49role" id="b49_studio" value="Studio"><label for="b49_studio">Studio</label></div>
+        <div class="check-row"><input type="radio" name="b49role" id="b49_costudio" value="Co-Studio"><label for="b49_costudio">Co-Studio</label></div>
+        <div class="check-row"><input type="radio" name="b49role" id="b49_prodservices" value="Production Services"><label for="b49_prodservices">Production Services</label></div>
+        <div class="check-row"><input type="radio" name="b49role" id="b49_producers" value="Producers"><label for="b49_producers">Producers</label></div>
+        <div class="check-row"><input type="radio" name="b49role" id="b49_na" value="N/A"><label for="b49_na">N/A</label></div>
+        <div class="check-row"><input type="radio" name="b49role" id="b49_unknown" value="Unknown"><label for="b49_unknown">Unknown</label></div>
+      </div>
+    </div>
+
+    <div class="grid g3" style="margin-top:14px;">
+      <div class="field">
+        <label for="f_platform">Commissioning Platform</label>
+        <input type="text" id="f_platform">
+      </div>
+      <div class="field">
+        <label for="f_counsel">Outside Counsel</label>
+        <input type="text" id="f_counsel">
+      </div>
+      <div class="field">
+        <label for="f_epcount">Episode Count</label>
+        <input type="text" id="f_epcount">
+      </div>
+      <div class="field">
+        <label for="f_runtime">Runtime</label>
+        <input type="text" id="f_runtime">
+      </div>
+      <div class="field">
+        <label for="f_genre">Genre</label>
+        <input type="text" id="f_genre">
       </div>
     </div>
   </div>
@@ -518,8 +557,11 @@ function collectData(){
     date: val('f_date'), creative: val('f_creative'), ba: val('f_ba'),
     project: val('f_project'), artist: val('f_artist'),
     union: val('f_union'), citizenship: val('f_citizenship'), residency: val('f_residency'),
-    market: { cad: chk('m_cad'), us: chk('m_us'), other: chk('m_other'), otherText: val('m_other_text') },
+    market: { cad: chk('m_cad'), us: chk('m_us'), global: chk('m_global'), globalText: val('m_global_text'), other: chk('m_other'), otherText: val('m_other_text') },
     genre: { half: chk('g_half'), one: chk('g_one'), mow: chk('g_mow'), limited: chk('g_limited'), eps: val('g_eps') },
+    b49role: (document.querySelector('input[name="b49role"]:checked') || {}).value || '',
+    platform: val('f_platform'), counsel: val('f_counsel'), epcount: val('f_epcount'),
+    runtime: val('f_runtime'), genreText: val('f_genre'),
     reps: reps,
     dealType: {
       ifcome: chk('dt_ifcome'), devwith: chk('dt_devwith'), devwithout: chk('dt_devwithout'),
@@ -583,12 +625,19 @@ function applyData(d){
 
   if(d.market){
     setChk('m_cad', d.market.cad); setChk('m_us', d.market.us);
+    setChk('m_global', d.market.global); set('m_global_text', d.market.globalText);
     setChk('m_other', d.market.other); set('m_other_text', d.market.otherText);
   }
   if(d.genre){
     setChk('g_half', d.genre.half); setChk('g_one', d.genre.one);
     setChk('g_mow', d.genre.mow); setChk('g_limited', d.genre.limited); set('g_eps', d.genre.eps);
   }
+  if(d.b49role){
+    const roleEl = document.querySelector(`input[name="b49role"][value="${d.b49role}"]`);
+    if(roleEl) roleEl.checked = true;
+  }
+  set('f_platform', d.platform); set('f_counsel', d.counsel); set('f_epcount', d.epcount);
+  set('f_runtime', d.runtime); set('f_genre', d.genreText);
 
   reps = (d.reps || []).map(r => ({...r, id: repIdCounter++}));
   renderReps();
@@ -811,6 +860,7 @@ function generatePDF(){
   const marketItems = [
     { label:'CAD', checked: d.market.cad },
     { label:'US', checked: d.market.us },
+    { label: d.market.globalText ? `Global Streamer/Intl: ${d.market.globalText}` : 'Global Streamer/Intl', checked: d.market.global },
     { label: d.market.otherText ? `Other: ${d.market.otherText}` : 'Other', checked: d.market.other }
   ];
   doc.setFont('helvetica','bold');
@@ -818,7 +868,7 @@ function generatePDF(){
   doc.setTextColor(90,90,90);
   doc.text('INTENDED INITIAL MARKET', margin, y);
   y += 14;
-  checkboxGrid(marketItems, 3);
+  checkboxGrid(marketItems, 2);
 
   const genreEpsLabel = d.genre.eps ? `Limited — # of eps: ${d.genre.eps}` : 'Limited';
   const genreItems = [
@@ -834,6 +884,31 @@ function generatePDF(){
   doc.text('GENRE / LENGTH', margin, y);
   y += 14;
   checkboxGrid(genreItems, 2);
+
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(8.5);
+  doc.setTextColor(90,90,90);
+  ensureSpace(14);
+  doc.text('BLINK49 ROLE', margin, y);
+  y += 14;
+  checkboxGrid([
+    { label:'Studio', checked: d.b49role === 'Studio' },
+    { label:'Co-Studio', checked: d.b49role === 'Co-Studio' },
+    { label:'Production Services', checked: d.b49role === 'Production Services' },
+    { label:'Producers', checked: d.b49role === 'Producers' },
+    { label:'N/A', checked: d.b49role === 'N/A' },
+    { label:'Unknown', checked: d.b49role === 'Unknown' }
+  ], 3);
+
+  fieldRow([
+    { label:'Commissioning Platform', value: d.platform },
+    { label:'Outside Counsel', value: d.counsel }
+  ]);
+  fieldRow([
+    { label:'Episode Count', value: d.epcount },
+    { label:'Runtime', value: d.runtime },
+    { label:'Genre', value: d.genreText }
+  ]);
 
   // Artist reps
   sectionTitle('Artist Reps');
@@ -971,8 +1046,10 @@ function generatePDF(){
     doc.text((d.project || 'Untitled Project') + ' — DRM', margin, pageHeight - 24);
   }
 
-  const slug = (d.project || 'untitled-project').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'');
-  doc.save(`DRM-${slug || 'untitled'}.pdf`);
+  const sanitizeFilePart = s => (s || '').replace(/[\\/:*?"<>|]/g, '').trim();
+  const projectPart = sanitizeFilePart(d.project) || 'Untitled Project';
+  const artistPart = sanitizeFilePart(d.artist) || 'TBD';
+  doc.save(`${projectPart} - DRM - ${artistPart}.pdf`);
   setStatus('PDF generated.');
 }
 
