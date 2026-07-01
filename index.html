@@ -34,7 +34,9 @@
     justify-content:space-between;
     border-bottom:3px solid var(--ink);
     padding-bottom:14px;
-    margin-bottom:28px;
+    margin-bottom:20px;
+    flex-wrap:wrap;
+    gap:10px;
   }
   header.page .brand{
     font-family:var(--mono);
@@ -54,6 +56,28 @@
     font-size:11px;
     color:var(--ink-soft);
     text-align:right;
+  }
+  .type-toggle{
+    display:flex;
+    gap:0;
+    margin-bottom:18px;
+    border:1px solid var(--accent);
+    border-radius:6px;
+    overflow:hidden;
+    width:fit-content;
+  }
+  .type-toggle label{
+    margin:0;text-transform:none;letter-spacing:0;font-weight:600;font-size:13px;
+    padding:9px 18px;
+    cursor:pointer;
+    color:var(--accent);
+    background:#fff;
+    user-select:none;
+  }
+  .type-toggle input{display:none;}
+  .type-toggle input:checked + label{
+    background:var(--accent);
+    color:#fff;
   }
   .section{
     background:var(--card);
@@ -103,7 +127,9 @@
   }
   textarea{resize:vertical;min-height:70px;font-family:var(--sans);}
   textarea.long{min-height:130px;}
+  textarea.short{min-height:48px;}
   .field{margin-bottom:0;}
+  .field + .field{margin-top:14px;}
   .check-row{
     display:flex;
     align-items:center;
@@ -134,6 +160,15 @@
     margin-top:6px;
     font-style:italic;
   }
+  .subhead{
+    font-size:11px;
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:0.05em;
+    color:var(--ink-soft);
+    margin:18px 0 8px;
+  }
+  .subhead:first-child{margin-top:0;}
   /* Reps */
   .rep-card{
     border:1px solid var(--line);
@@ -217,18 +252,28 @@
     font-size:12px;color:var(--ink-soft);font-family:var(--mono);
     align-self:center;
   }
+  .ts-scripted, .ts-unscripted{display:block;}
+  body.type-scripted .ts-unscripted{display:none !important;}
+  body.type-unscripted .ts-scripted{display:none !important;}
 </style>
 </head>
-<body>
+<body class="type-scripted">
 <div class="wrap">
 
   <header class="page">
     <div>
       <div class="brand">Business &amp; Legal Affairs</div>
-      <h1>Deal Request Memo — Scripted</h1>
+      <h1 id="pageTitle">Deal Request Memo — Scripted</h1>
     </div>
-    <div class="tag">DRM Builder<br>v1</div>
+    <div class="tag">DRM Builder<br>v2</div>
   </header>
+
+  <div class="type-toggle">
+    <input type="radio" name="formType" id="type_scripted" value="scripted" checked>
+    <label for="type_scripted">Scripted</label>
+    <input type="radio" name="formType" id="type_unscripted" value="unscripted">
+    <label for="type_unscripted">Unscripted</label>
+  </div>
 
   <!-- HEADER INFO -->
   <div class="section">
@@ -262,11 +307,13 @@
         <input type="text" id="f_artist">
       </div>
     </div>
-    <div class="grid g3" style="margin-top:14px;">
-      <div class="field">
-        <label for="f_union">Union Membership (CAD &amp; US)</label>
-        <input type="text" id="f_union">
-      </div>
+
+    <div class="field ts-unscripted" style="margin-top:14px;">
+      <label for="u_logline">Logline</label>
+      <textarea id="u_logline" class="short"></textarea>
+    </div>
+
+    <div class="grid g2" style="margin-top:14px;">
       <div class="field">
         <label for="f_citizenship">Citizenship</label>
         <input type="text" id="f_citizenship">
@@ -277,64 +324,108 @@
       </div>
     </div>
 
-    <div class="grid g2" style="margin-top:14px;">
-      <div class="field">
+    <!-- SCRIPTED-ONLY project details -->
+    <div class="ts-scripted">
+      <div class="field" style="margin-top:14px;">
+        <label>Union Membership</label>
+        <div class="check-grid">
+          <div class="check-row"><input type="checkbox" id="un_cad"><label for="un_cad">CAD</label></div>
+          <div class="check-row"><input type="checkbox" id="un_us"><label for="un_us">US</label></div>
+          <div class="check-row"><input type="checkbox" id="un_nonunion"><label for="un_nonunion">Non-Union</label></div>
+          <div class="check-row with-input">
+            <input type="checkbox" id="un_other"><label for="un_other">Other:</label>
+            <input type="text" id="un_other_text">
+          </div>
+        </div>
+      </div>
+
+      <div class="grid g2" style="margin-top:14px;">
+        <div class="field">
+          <label>Intended Initial Market</label>
+          <div class="check-row"><input type="checkbox" id="m_cad"><label for="m_cad">CAD</label></div>
+          <div class="check-row"><input type="checkbox" id="m_us"><label for="m_us">US</label></div>
+          <div class="check-row with-input">
+            <input type="checkbox" id="m_global"><label for="m_global">Global Streamer / International:</label>
+            <input type="text" id="m_global_text">
+          </div>
+          <div class="check-row with-input">
+            <input type="checkbox" id="m_other"><label for="m_other">Other:</label>
+            <input type="text" id="m_other_text">
+          </div>
+        </div>
+        <div class="field">
+          <label>Genre / Length</label>
+          <div class="check-row"><input type="checkbox" id="g_half"><label for="g_half">½ Hr</label></div>
+          <div class="check-row"><input type="checkbox" id="g_one"><label for="g_one">1 Hr</label></div>
+          <div class="check-row"><input type="checkbox" id="g_mow"><label for="g_mow">MOW</label></div>
+          <div class="check-row"><input type="checkbox" id="g_limited"><label for="g_limited">Format</label></div>
+        </div>
+      </div>
+
+      <div class="field" style="margin-top:14px;">
+        <label>Blink49 Role</label>
+        <div class="check-grid">
+          <div class="check-row"><input type="radio" name="b49role" id="b49_studio" value="Studio"><label for="b49_studio">Studio</label></div>
+          <div class="check-row"><input type="radio" name="b49role" id="b49_costudio" value="Co-Studio"><label for="b49_costudio">Co-Studio</label></div>
+          <div class="check-row"><input type="radio" name="b49role" id="b49_prodservices" value="Production Services"><label for="b49_prodservices">Production Services</label></div>
+          <div class="check-row"><input type="radio" name="b49role" id="b49_producers" value="Producers"><label for="b49_producers">Producers</label></div>
+          <div class="check-row"><input type="radio" name="b49role" id="b49_na" value="N/A"><label for="b49_na">N/A</label></div>
+          <div class="check-row"><input type="radio" name="b49role" id="b49_unknown" value="Unknown"><label for="b49_unknown">Unknown</label></div>
+        </div>
+      </div>
+
+      <div class="grid g3" style="margin-top:14px;">
+        <div class="field">
+          <label for="f_platform">Commissioning Platform</label>
+          <input type="text" id="f_platform">
+        </div>
+        <div class="field">
+          <label for="f_counsel">Outside Counsel</label>
+          <input type="text" id="f_counsel">
+        </div>
+        <div class="field">
+          <label for="f_epcount">Episode Count</label>
+          <input type="text" id="f_epcount">
+        </div>
+        <div class="field">
+          <label for="f_runtime">Runtime</label>
+          <input type="text" id="f_runtime">
+        </div>
+        <div class="field">
+          <label for="f_genre">Genre</label>
+          <input type="text" id="f_genre">
+        </div>
+      </div>
+    </div>
+
+    <!-- UNSCRIPTED-ONLY project details -->
+    <div class="ts-unscripted">
+      <div class="field" style="margin-top:14px;">
+        <label>Project Type</label>
+        <div class="check-grid">
+          <div class="check-row"><input type="checkbox" id="u_pt_reality"><label for="u_pt_reality">Reality</label></div>
+          <div class="check-row"><input type="checkbox" id="u_pt_docuseries"><label for="u_pt_docuseries">Docuseries</label></div>
+          <div class="check-row"><input type="checkbox" id="u_pt_docfilm"><label for="u_pt_docfilm">Documentary Film</label></div>
+          <div class="check-row with-input">
+            <input type="checkbox" id="u_pt_other"><label for="u_pt_other">Other:</label>
+            <input type="text" id="u_pt_other_text">
+          </div>
+        </div>
+      </div>
+
+      <div class="field" style="margin-top:14px;">
         <label>Intended Initial Market</label>
-        <div class="check-row"><input type="checkbox" id="m_cad"><label for="m_cad">CAD</label></div>
-        <div class="check-row"><input type="checkbox" id="m_us"><label for="m_us">US</label></div>
+        <div class="check-row"><input type="checkbox" id="u_m_cad"><label for="u_m_cad">CAD</label></div>
+        <div class="check-row"><input type="checkbox" id="u_m_us"><label for="u_m_us">US</label></div>
         <div class="check-row with-input">
-          <input type="checkbox" id="m_global"><label for="m_global">Global Streamer / International:</label>
-          <input type="text" id="m_global_text">
-        </div>
-        <div class="check-row with-input">
-          <input type="checkbox" id="m_other"><label for="m_other">Other:</label>
-          <input type="text" id="m_other_text">
+          <input type="checkbox" id="u_m_other"><label for="u_m_other">Other:</label>
+          <input type="text" id="u_m_other_text">
         </div>
       </div>
-      <div class="field">
-        <label>Genre / Length</label>
-        <div class="check-row"><input type="checkbox" id="g_half"><label for="g_half">½ Hr</label></div>
-        <div class="check-row"><input type="checkbox" id="g_one"><label for="g_one">1 Hr</label></div>
-        <div class="check-row"><input type="checkbox" id="g_mow"><label for="g_mow">MOW</label></div>
-        <div class="check-row with-input">
-          <input type="checkbox" id="g_limited"><label for="g_limited">Limited — # of eps:</label>
-          <input type="text" id="g_eps" style="max-width:70px;">
-        </div>
-      </div>
-    </div>
 
-    <div class="field" style="margin-top:14px;">
-      <label>Blink49 Role</label>
-      <div class="check-grid">
-        <div class="check-row"><input type="radio" name="b49role" id="b49_studio" value="Studio"><label for="b49_studio">Studio</label></div>
-        <div class="check-row"><input type="radio" name="b49role" id="b49_costudio" value="Co-Studio"><label for="b49_costudio">Co-Studio</label></div>
-        <div class="check-row"><input type="radio" name="b49role" id="b49_prodservices" value="Production Services"><label for="b49_prodservices">Production Services</label></div>
-        <div class="check-row"><input type="radio" name="b49role" id="b49_producers" value="Producers"><label for="b49_producers">Producers</label></div>
-        <div class="check-row"><input type="radio" name="b49role" id="b49_na" value="N/A"><label for="b49_na">N/A</label></div>
-        <div class="check-row"><input type="radio" name="b49role" id="b49_unknown" value="Unknown"><label for="b49_unknown">Unknown</label></div>
-      </div>
-    </div>
-
-    <div class="grid g3" style="margin-top:14px;">
-      <div class="field">
-        <label for="f_platform">Commissioning Platform</label>
-        <input type="text" id="f_platform">
-      </div>
-      <div class="field">
-        <label for="f_counsel">Outside Counsel</label>
-        <input type="text" id="f_counsel">
-      </div>
-      <div class="field">
-        <label for="f_epcount">Episode Count</label>
-        <input type="text" id="f_epcount">
-      </div>
-      <div class="field">
-        <label for="f_runtime">Runtime</label>
-        <input type="text" id="f_runtime">
-      </div>
-      <div class="field">
-        <label for="f_genre">Genre</label>
-        <input type="text" id="f_genre">
+      <div class="field" style="margin-top:14px;">
+        <label for="u_outlets">Potential Outlets / Networks</label>
+        <textarea id="u_outlets" class="short"></textarea>
       </div>
     </div>
   </div>
@@ -355,8 +446,8 @@
     <div class="hint">Add as many as apply — one agent, three agents, a manager and a lawyer, whatever the actual deal looks like. Leave it empty if there's no rep info yet.</div>
   </div>
 
-  <!-- DEAL TYPE / ROLE / SERVICES -->
-  <div class="section">
+  <!-- SCRIPTED: DEAL TYPE / ROLE / SERVICES -->
+  <div class="section ts-scripted">
     <h2>Deal Type</h2>
     <div class="check-grid">
       <div class="check-row"><input type="checkbox" id="dt_ifcome"><label for="dt_ifcome">If/Come</label></div>
@@ -376,7 +467,7 @@
     </div>
   </div>
 
-  <div class="section">
+  <div class="section ts-scripted">
     <h2>Role</h2>
     <div class="check-grid">
       <div class="check-row"><input type="checkbox" id="r_showrunner"><label for="r_showrunner">Showrunner</label></div>
@@ -394,7 +485,7 @@
     </div>
   </div>
 
-  <div class="section">
+  <div class="section ts-scripted">
     <h2>Services / Steps</h2>
     <div class="check-grid">
       <div class="check-row"><input type="checkbox" id="s_pitch"><label for="s_pitch">Pitch Document</label></div>
@@ -413,7 +504,87 @@
     </div>
   </div>
 
-  <!-- NOTES SECTIONS -->
+  <!-- UNSCRIPTED: EXISTING MATERIALS / DEAL TYPE / ROLE / DEAL PARAMETERS -->
+  <div class="section ts-unscripted">
+    <h2>Existing Underlying Materials</h2>
+    <div class="field">
+      <label for="u_underlying">If Any</label>
+      <textarea id="u_underlying"></textarea>
+    </div>
+  </div>
+
+  <div class="section ts-unscripted">
+    <h2>Deal Type</h2>
+    <div class="check-grid">
+      <div class="check-row"><input type="checkbox" id="u_dt_shopping"><label for="u_dt_shopping">Shopping Agmt</label></div>
+      <div class="check-row"><input type="checkbox" id="u_dt_coproduction"><label for="u_dt_coproduction">Co-Production</label></div>
+      <div class="check-row"><input type="checkbox" id="u_dt_talent"><label for="u_dt_talent">Talent Attachment</label></div>
+      <div class="check-row"><input type="checkbox" id="u_dt_option"><label for="u_dt_option">Option Agmt</label></div>
+      <div class="check-row"><input type="checkbox" id="u_dt_firstlook"><label for="u_dt_firstlook">First Look/Overall</label></div>
+    </div>
+    <div class="check-row with-input">
+      <input type="checkbox" id="u_dt_other"><label for="u_dt_other">Other:</label>
+      <input type="text" id="u_dt_other_text">
+    </div>
+  </div>
+
+  <div class="section ts-unscripted">
+    <h2>Role</h2>
+    <div class="check-grid">
+      <div class="check-row"><input type="checkbox" id="u_r_showrunner"><label for="u_r_showrunner">Showrunner</label></div>
+      <div class="check-row"><input type="checkbox" id="u_r_ep"><label for="u_r_ep">EP</label></div>
+      <div class="check-row"><input type="checkbox" id="u_r_passiveep"><label for="u_r_passiveep">Passive EP</label></div>
+      <div class="check-row"><input type="checkbox" id="u_r_director"><label for="u_r_director">Director</label></div>
+      <div class="check-row"><input type="checkbox" id="u_r_oncamera"><label for="u_r_oncamera">On-Camera Talent</label></div>
+    </div>
+    <div class="check-row with-input">
+      <input type="checkbox" id="u_r_other"><label for="u_r_other">Other:</label>
+      <input type="text" id="u_r_other_text">
+    </div>
+  </div>
+
+  <div class="section ts-unscripted">
+    <h2>Deal Parameters</h2>
+    <div class="grid g2">
+      <div class="field"><label for="u_term">Term Length</label><input type="text" id="u_term"></div>
+      <div class="field"><label for="u_optionspend">Expected Option Spend</label><input type="text" id="u_optionspend"></div>
+    </div>
+    <div class="field" style="margin-top:14px;">
+      <label for="u_whocreated">Who Created Concept/Idea</label>
+      <input type="text" id="u_whocreated">
+    </div>
+    <div class="field" style="margin-top:14px;">
+      <label>Do We Need Artist to Deliver Development Materials?</label>
+      <div class="check-row"><input type="radio" name="u_devmaterials" id="u_dm_yes" value="yes"><label for="u_dm_yes">Yes</label></div>
+      <div class="check-row"><input type="radio" name="u_devmaterials" id="u_dm_no" value="no"><label for="u_dm_no">No</label></div>
+      <div class="field" style="margin-top:6px;">
+        <label for="u_dm_list">List</label>
+        <input type="text" id="u_dm_list">
+      </div>
+    </div>
+    <div class="grid g2" style="margin-top:14px;">
+      <div class="field"><label for="u_reversion">Reversion</label><input type="text" id="u_reversion"></div>
+      <div class="field"><label for="u_epfee">EP Fee</label><input type="text" id="u_epfee"></div>
+    </div>
+    <div class="grid g2" style="margin-top:14px;">
+      <div class="field"><label for="u_lineitemfee">Line Item Fee (if any — provide details)</label><input type="text" id="u_lineitemfee"></div>
+      <div class="field"><label for="u_backend">Backend</label><input type="text" id="u_backend"></div>
+    </div>
+    <div class="grid g2" style="margin-top:14px;">
+      <div class="field"><label for="u_credits">Credits (Producing, Logo)</label><input type="text" id="u_credits"></div>
+      <div class="field"><label for="u_lock">Lock (Series, Spin-offs/Derivatives?)</label><input type="text" id="u_lock"></div>
+    </div>
+    <div class="grid g2" style="margin-top:14px;">
+      <div class="field"><label for="u_creativeapproval">Creative Approval Level (i.e. meaningful consultation)</label><input type="text" id="u_creativeapproval"></div>
+      <div class="field"><label for="u_exclusivity">Level of Exclusivity</label><input type="text" id="u_exclusivity"></div>
+    </div>
+    <div class="field" style="margin-top:14px;">
+      <label for="u_artistbusiness">Does Artist Have a Business We Need Exclusivity/Access To</label>
+      <input type="text" id="u_artistbusiness">
+    </div>
+  </div>
+
+  <!-- NOTES SECTIONS (shared) -->
   <div class="section">
     <h2>Deadlines &amp; Attendance</h2>
     <div class="field" style="margin-bottom:14px;">
@@ -426,8 +597,8 @@
     </div>
   </div>
 
-  <!-- JV -->
-  <div class="section">
+  <!-- JV (scripted only) -->
+  <div class="section ts-scripted">
     <h2>JV Project</h2>
     <div class="check-row"><input type="radio" name="jv" id="jv_no" value="no" checked><label for="jv_no">No</label></div>
     <div class="check-row"><input type="radio" name="jv" id="jv_yes" value="yes"><label for="jv_yes">Yes</label></div>
@@ -457,6 +628,19 @@
     </div>
   </div>
 
+  <!-- DOCUMENTARY ONLY (unscripted only) -->
+  <div class="section ts-unscripted">
+    <h2>Documentary Only Additional Info</h2>
+    <div class="hint" style="margin:0 0 12px;">Only applies if Project Type is Documentary Film.</div>
+    <div class="field"><label for="u_doc_subject">Subject of Documentary (if person)</label><input type="text" id="u_doc_subject"></div>
+    <div class="field" style="margin-top:14px;"><label for="u_doc_subjectcomp">Subject's Compensation (if any — ex. location fees, archival fees)</label><input type="text" id="u_doc_subjectcomp"></div>
+    <div class="field" style="margin-top:14px;"><label for="u_doc_funding">Is Blink49 Funding the Pitch (if partial, what amount)</label><input type="text" id="u_doc_funding"></div>
+    <div class="field" style="margin-top:14px;"><label for="u_doc_partners">List Any Outside Partners/Financiers</label><input type="text" id="u_doc_partners"></div>
+    <div class="field" style="margin-top:14px;"><label for="u_doc_controversial">Is the Subject Matter Controversial (e.g., crime, investigative, etc.)</label><input type="text" id="u_doc_controversial"></div>
+    <div class="field" style="margin-top:14px;"><label for="u_doc_litigation">Is There an Active Litigation, Trial, or Criminal Investigation?</label><input type="text" id="u_doc_litigation"></div>
+    <div class="field" style="margin-top:14px;"><label for="u_doc_archival">Will the Series Rely on Archival Materials? (list type)</label><input type="text" id="u_doc_archival"></div>
+  </div>
+
   <div class="section">
     <h2>Additional Notes</h2>
     <div class="field">
@@ -483,6 +667,18 @@ const JV_OPTIONS = [
   "National Lampoon","Joel Wyman","Piller/Segan","RankinFile","Belletrist",
   "Electric Ave","Punctuation Media","Bell Media"
 ];
+
+// ---------- Form type toggle ----------
+document.getElementById('type_scripted').addEventListener('change', () => setFormType('scripted'));
+document.getElementById('type_unscripted').addEventListener('change', () => setFormType('unscripted'));
+
+function setFormType(type){
+  document.body.classList.toggle('type-scripted', type === 'scripted');
+  document.body.classList.toggle('type-unscripted', type === 'unscripted');
+  document.getElementById('pageTitle').textContent = type === 'scripted'
+    ? 'Deal Request Memo — Scripted'
+    : 'Deal Request Memo — Unscripted';
+}
 
 // ---------- Reps ----------
 let reps = [];
@@ -554,11 +750,13 @@ function collectData(){
   const jvSelected = JV_OPTIONS.filter((name,i) => chk(`jv_opt_${i}`));
 
   return {
+    formType: document.getElementById('type_unscripted').checked ? 'unscripted' : 'scripted',
     date: val('f_date'), creative: val('f_creative'), ba: val('f_ba'),
     project: val('f_project'), artist: val('f_artist'),
-    union: val('f_union'), citizenship: val('f_citizenship'), residency: val('f_residency'),
+    citizenship: val('f_citizenship'), residency: val('f_residency'),
+    union: { cad: chk('un_cad'), us: chk('un_us'), nonunion: chk('un_nonunion'), other: chk('un_other'), otherText: val('un_other_text') },
     market: { cad: chk('m_cad'), us: chk('m_us'), global: chk('m_global'), globalText: val('m_global_text'), other: chk('m_other'), otherText: val('m_other_text') },
-    genre: { half: chk('g_half'), one: chk('g_one'), mow: chk('g_mow'), limited: chk('g_limited'), eps: val('g_eps') },
+    genre: { half: chk('g_half'), one: chk('g_one'), mow: chk('g_mow'), limited: chk('g_limited') },
     b49role: (document.querySelector('input[name="b49role"]:checked') || {}).value || '',
     platform: val('f_platform'), counsel: val('f_counsel'), epcount: val('f_epcount'),
     runtime: val('f_runtime'), genreText: val('f_genre'),
@@ -583,7 +781,41 @@ function collectData(){
     },
     deadlines: val('f_deadlines'), attendance: val('f_attendance'),
     jv: { yes: chk('jv_yes'), selected: jvSelected, other: chk('jv_other'), otherText: val('jv_other_text') },
-    auspices: val('f_auspices'), comps: val('f_comps'), notes: val('f_notes')
+    auspices: val('f_auspices'), comps: val('f_comps'), notes: val('f_notes'),
+
+    // Unscripted-specific
+    u_logline: val('u_logline'),
+    u_projectType: {
+      reality: chk('u_pt_reality'), docuseries: chk('u_pt_docuseries'), docfilm: chk('u_pt_docfilm'),
+      other: chk('u_pt_other'), otherText: val('u_pt_other_text')
+    },
+    u_market: { cad: chk('u_m_cad'), us: chk('u_m_us'), other: chk('u_m_other'), otherText: val('u_m_other_text') },
+    u_outlets: val('u_outlets'),
+    u_underlying: val('u_underlying'),
+    u_dealType: {
+      shopping: chk('u_dt_shopping'), coproduction: chk('u_dt_coproduction'), talent: chk('u_dt_talent'),
+      option: chk('u_dt_option'), firstlook: chk('u_dt_firstlook'),
+      other: chk('u_dt_other'), otherText: val('u_dt_other_text')
+    },
+    u_role: {
+      showrunner: chk('u_r_showrunner'), ep: chk('u_r_ep'), passiveep: chk('u_r_passiveep'),
+      director: chk('u_r_director'), oncamera: chk('u_r_oncamera'),
+      other: chk('u_r_other'), otherText: val('u_r_other_text')
+    },
+    u_params: {
+      term: val('u_term'), optionspend: val('u_optionspend'), whocreated: val('u_whocreated'),
+      devmaterials: (document.querySelector('input[name="u_devmaterials"]:checked') || {}).value || '',
+      devmaterialsList: val('u_dm_list'),
+      reversion: val('u_reversion'), epfee: val('u_epfee'), lineitemfee: val('u_lineitemfee'),
+      backend: val('u_backend'), credits: val('u_credits'), lock: val('u_lock'),
+      creativeapproval: val('u_creativeapproval'), exclusivity: val('u_exclusivity'),
+      artistbusiness: val('u_artistbusiness')
+    },
+    u_doc: {
+      subject: val('u_doc_subject'), subjectcomp: val('u_doc_subjectcomp'), funding: val('u_doc_funding'),
+      partners: val('u_doc_partners'), controversial: val('u_doc_controversial'),
+      litigation: val('u_doc_litigation'), archival: val('u_doc_archival')
+    }
   };
 }
 
@@ -619,9 +851,22 @@ function applyData(d){
   const set = (id,v) => { const el = document.getElementById(id); if(el) el.value = v || ''; };
   const setChk = (id,v) => { const el = document.getElementById(id); if(el) el.checked = !!v; };
 
+  if(d.formType === 'unscripted'){
+    document.getElementById('type_unscripted').checked = true;
+    setFormType('unscripted');
+  } else {
+    document.getElementById('type_scripted').checked = true;
+    setFormType('scripted');
+  }
+
   set('f_date', d.date); set('f_creative', d.creative); set('f_ba', d.ba);
   set('f_project', d.project); set('f_artist', d.artist);
-  set('f_union', d.union); set('f_citizenship', d.citizenship); set('f_residency', d.residency);
+  set('f_citizenship', d.citizenship); set('f_residency', d.residency);
+  if(d.union){
+    setChk('un_cad', d.union.cad); setChk('un_us', d.union.us);
+    setChk('un_nonunion', d.union.nonunion); setChk('un_other', d.union.other);
+    set('un_other_text', d.union.otherText);
+  }
 
   if(d.market){
     setChk('m_cad', d.market.cad); setChk('m_us', d.market.us);
@@ -630,7 +875,7 @@ function applyData(d){
   }
   if(d.genre){
     setChk('g_half', d.genre.half); setChk('g_one', d.genre.one);
-    setChk('g_mow', d.genre.mow); setChk('g_limited', d.genre.limited); set('g_eps', d.genre.eps);
+    setChk('g_mow', d.genre.mow); setChk('g_limited', d.genre.limited);
   }
   if(d.b49role){
     const roleEl = document.querySelector(`input[name="b49role"][value="${d.b49role}"]`);
@@ -678,6 +923,52 @@ function applyData(d){
   }
 
   set('f_auspices', d.auspices); set('f_comps', d.comps); set('f_notes', d.notes);
+
+  // Unscripted
+  set('u_logline', d.u_logline);
+  if(d.u_projectType){
+    setChk('u_pt_reality', d.u_projectType.reality); setChk('u_pt_docuseries', d.u_projectType.docuseries);
+    setChk('u_pt_docfilm', d.u_projectType.docfilm); setChk('u_pt_other', d.u_projectType.other);
+    set('u_pt_other_text', d.u_projectType.otherText);
+  }
+  if(d.u_market){
+    setChk('u_m_cad', d.u_market.cad); setChk('u_m_us', d.u_market.us);
+    setChk('u_m_other', d.u_market.other); set('u_m_other_text', d.u_market.otherText);
+  }
+  set('u_outlets', d.u_outlets);
+  set('u_underlying', d.u_underlying);
+  if(d.u_dealType){
+    setChk('u_dt_shopping', d.u_dealType.shopping); setChk('u_dt_coproduction', d.u_dealType.coproduction);
+    setChk('u_dt_talent', d.u_dealType.talent); setChk('u_dt_option', d.u_dealType.option);
+    setChk('u_dt_firstlook', d.u_dealType.firstlook); setChk('u_dt_other', d.u_dealType.other);
+    set('u_dt_other_text', d.u_dealType.otherText);
+  }
+  if(d.u_role){
+    setChk('u_r_showrunner', d.u_role.showrunner); setChk('u_r_ep', d.u_role.ep);
+    setChk('u_r_passiveep', d.u_role.passiveep); setChk('u_r_director', d.u_role.director);
+    setChk('u_r_oncamera', d.u_role.oncamera); setChk('u_r_other', d.u_role.other);
+    set('u_r_other_text', d.u_role.otherText);
+  }
+  if(d.u_params){
+    set('u_term', d.u_params.term); set('u_optionspend', d.u_params.optionspend);
+    set('u_whocreated', d.u_params.whocreated);
+    if(d.u_params.devmaterials){
+      const dmEl = document.querySelector(`input[name="u_devmaterials"][value="${d.u_params.devmaterials}"]`);
+      if(dmEl) dmEl.checked = true;
+    }
+    set('u_dm_list', d.u_params.devmaterialsList);
+    set('u_reversion', d.u_params.reversion); set('u_epfee', d.u_params.epfee);
+    set('u_lineitemfee', d.u_params.lineitemfee); set('u_backend', d.u_params.backend);
+    set('u_credits', d.u_params.credits); set('u_lock', d.u_params.lock);
+    set('u_creativeapproval', d.u_params.creativeapproval); set('u_exclusivity', d.u_params.exclusivity);
+    set('u_artistbusiness', d.u_params.artistbusiness);
+  }
+  if(d.u_doc){
+    set('u_doc_subject', d.u_doc.subject); set('u_doc_subjectcomp', d.u_doc.subjectcomp);
+    set('u_doc_funding', d.u_doc.funding); set('u_doc_partners', d.u_doc.partners);
+    set('u_doc_controversial', d.u_doc.controversial); set('u_doc_litigation', d.u_doc.litigation);
+    set('u_doc_archival', d.u_doc.archival);
+  }
 }
 
 function setStatus(msg){
@@ -706,11 +997,12 @@ function generatePDF(){
   }
 
   function header(){
+    const docLabel = d.formType === 'unscripted' ? 'DEAL REQUEST MEMO - UNSCRIPTED' : 'DEAL REQUEST MEMO - SCRIPTED';
     doc.setFont('helvetica','bold');
     doc.setFontSize(9);
     doc.setTextColor(90,90,90);
     doc.text('BUSINESS AND LEGAL AFFAIRS', margin, y);
-    doc.text('DEAL REQUEST MEMO - SCRIPTED', pageWidth - margin, y, { align:'right' });
+    doc.text(docLabel, pageWidth - margin, y, { align:'right' });
     y += 22;
     doc.setDrawColor(20,20,20);
     doc.setLineWidth(1.4);
@@ -753,7 +1045,6 @@ function generatePDF(){
   }
 
   function fieldRow(fields){
-    // fields: [{label, value}]
     const colWidth = contentWidth / fields.length - 10;
     ensureSpace(34);
     let maxLines = 1;
@@ -776,15 +1067,6 @@ function generatePDF(){
     }
   }
 
-  function checkboxLine(label, checked, x, width){
-    doc.setFont('helvetica','normal');
-    doc.setFontSize(10);
-    doc.setTextColor(20,20,20);
-    checkbox(x, y, checked);
-    doc.text(label, x + 14, y);
-    return width;
-  }
-
   function checkboxGrid(items, perRow){
     perRow = perRow || 2;
     const colWidth = contentWidth / perRow;
@@ -794,9 +1076,6 @@ function generatePDF(){
       const row = Math.floor(i / perRow);
       const x = margin + col * colWidth;
       const rowY = y + row * 17;
-      if(rowY > pageHeight - margin - 10){
-        // overflow handling simplified: caller should keep grids modest in length
-      }
       checkbox(x, rowY, item.checked);
       doc.setFont('helvetica','normal');
       doc.setFontSize(10);
@@ -845,81 +1124,306 @@ function generatePDF(){
   // ---- Build document ----
   header();
 
-  sectionTitle('Project');
-  fieldRow([
-    { label:'Project Name', value: d.project },
-    { label:'Artist / Entity to Contract For', value: d.artist }
-  ]);
-  fieldRow([
-    { label:'Union Membership', value: d.union },
-    { label:'Citizenship', value: d.citizenship },
-    { label:'Residency', value: d.residency }
-  ]);
-
-  ensureSpace(20);
-  const marketItems = [
-    { label:'CAD', checked: d.market.cad },
-    { label:'US', checked: d.market.us },
-    { label: d.market.globalText ? `Global Streamer/Intl: ${d.market.globalText}` : 'Global Streamer/Intl', checked: d.market.global },
-    { label: d.market.otherText ? `Other: ${d.market.otherText}` : 'Other', checked: d.market.other }
-  ];
-  doc.setFont('helvetica','bold');
-  doc.setFontSize(8.5);
-  doc.setTextColor(90,90,90);
-  doc.text('INTENDED INITIAL MARKET', margin, y);
-  y += 14;
-  checkboxGrid(marketItems, 2);
-
-  const genreEpsLabel = d.genre.eps ? `Limited — # of eps: ${d.genre.eps}` : 'Limited';
-  const genreItems = [
-    { label:'½ Hr', checked: d.genre.half },
-    { label:'1 Hr', checked: d.genre.one },
-    { label:'MOW', checked: d.genre.mow },
-    { label: genreEpsLabel, checked: d.genre.limited }
-  ];
-  doc.setFont('helvetica','bold');
-  doc.setFontSize(8.5);
-  doc.setTextColor(90,90,90);
-  ensureSpace(14);
-  doc.text('GENRE / LENGTH', margin, y);
-  y += 14;
-  checkboxGrid(genreItems, 2);
-
-  doc.setFont('helvetica','bold');
-  doc.setFontSize(8.5);
-  doc.setTextColor(90,90,90);
-  ensureSpace(14);
-  doc.text('BLINK49 ROLE', margin, y);
-  y += 14;
-  checkboxGrid([
-    { label:'Studio', checked: d.b49role === 'Studio' },
-    { label:'Co-Studio', checked: d.b49role === 'Co-Studio' },
-    { label:'Production Services', checked: d.b49role === 'Production Services' },
-    { label:'Producers', checked: d.b49role === 'Producers' },
-    { label:'N/A', checked: d.b49role === 'N/A' },
-    { label:'Unknown', checked: d.b49role === 'Unknown' }
-  ], 3);
-
-  fieldRow([
-    { label:'Commissioning Platform', value: d.platform },
-    { label:'Outside Counsel', value: d.counsel }
-  ]);
-  fieldRow([
-    { label:'Episode Count', value: d.epcount },
-    { label:'Runtime', value: d.runtime },
-    { label:'Genre', value: d.genreText }
-  ]);
-
-  // Artist reps
-  sectionTitle('Artist Reps');
-  if(!d.reps.length){
-    doc.setFont('helvetica','italic');
-    doc.setFontSize(10);
-    doc.setTextColor(120,120,120);
-    ensureSpace(16);
-    doc.text('No reps listed.', margin, y);
-    y += 18;
+  if(d.formType === 'unscripted'){
+    buildUnscripted();
   } else {
+    buildScripted();
+  }
+
+  function buildScripted(){
+    sectionTitle('Project');
+    fieldRow([
+      { label:'Project Name', value: d.project },
+      { label:'Artist / Entity to Contract For', value: d.artist }
+    ]);
+    fieldRow([
+      { label:'Citizenship', value: d.citizenship },
+      { label:'Residency', value: d.residency }
+    ]);
+
+    doc.setFont('helvetica','bold');
+    doc.setFontSize(8.5);
+    doc.setTextColor(90,90,90);
+    ensureSpace(14);
+    doc.text('UNION MEMBERSHIP', margin, y);
+    y += 14;
+    checkboxGrid([
+      { label:'CAD', checked: d.union.cad },
+      { label:'US', checked: d.union.us },
+      { label:'Non-Union', checked: d.union.nonunion },
+      { label: d.union.otherText ? `Other: ${d.union.otherText}` : 'Other', checked: d.union.other }
+    ], 2);
+
+    ensureSpace(20);
+    const marketItems = [
+      { label:'CAD', checked: d.market.cad },
+      { label:'US', checked: d.market.us },
+      { label: d.market.globalText ? `Global Streamer/Intl: ${d.market.globalText}` : 'Global Streamer/Intl', checked: d.market.global },
+      { label: d.market.otherText ? `Other: ${d.market.otherText}` : 'Other', checked: d.market.other }
+    ];
+    doc.setFont('helvetica','bold');
+    doc.setFontSize(8.5);
+    doc.setTextColor(90,90,90);
+    doc.text('INTENDED INITIAL MARKET', margin, y);
+    y += 14;
+    checkboxGrid(marketItems, 2);
+
+    const genreItems = [
+      { label:'½ Hr', checked: d.genre.half },
+      { label:'1 Hr', checked: d.genre.one },
+      { label:'MOW', checked: d.genre.mow },
+      { label:'Format', checked: d.genre.limited }
+    ];
+    doc.setFont('helvetica','bold');
+    doc.setFontSize(8.5);
+    doc.setTextColor(90,90,90);
+    ensureSpace(14);
+    doc.text('GENRE / LENGTH', margin, y);
+    y += 14;
+    checkboxGrid(genreItems, 2);
+
+    doc.setFont('helvetica','bold');
+    doc.setFontSize(8.5);
+    doc.setTextColor(90,90,90);
+    ensureSpace(14);
+    doc.text('BLINK49 ROLE', margin, y);
+    y += 14;
+    checkboxGrid([
+      { label:'Studio', checked: d.b49role === 'Studio' },
+      { label:'Co-Studio', checked: d.b49role === 'Co-Studio' },
+      { label:'Production Services', checked: d.b49role === 'Production Services' },
+      { label:'Producers', checked: d.b49role === 'Producers' },
+      { label:'N/A', checked: d.b49role === 'N/A' },
+      { label:'Unknown', checked: d.b49role === 'Unknown' }
+    ], 3);
+
+    fieldRow([
+      { label:'Commissioning Platform', value: d.platform },
+      { label:'Outside Counsel', value: d.counsel }
+    ]);
+    fieldRow([
+      { label:'Episode Count', value: d.epcount },
+      { label:'Runtime', value: d.runtime },
+      { label:'Genre', value: d.genreText }
+    ]);
+
+    sectionTitle('Artist Reps');
+    renderRepsToPdf();
+
+    sectionTitle('Deal Type');
+    checkboxGrid([
+      { label:'If/Come', checked: d.dealType.ifcome },
+      { label:'Dev. Commitment (with $)', checked: d.dealType.devwith },
+      { label:'Dev. Commitment (w/out $)', checked: d.dealType.devwithout },
+      { label:'Shopping Agmt', checked: d.dealType.shopping },
+      { label:'Option (Literary)', checked: d.dealType.optlit },
+      { label:'Option (Life Rights)', checked: d.dealType.optlife },
+      { label:'Option (Script)', checked: d.dealType.optscript },
+      { label:'First Look', checked: d.dealType.firstlook },
+      { label:'Overall', checked: d.dealType.overall },
+      { label:'Blind Script', checked: d.dealType.blind }
+    ], 2);
+    checkboxWithText('Other:', d.dealType.other, d.dealType.otherText);
+
+    sectionTitle('Role');
+    checkboxGrid([
+      { label:'Showrunner', checked: d.role.showrunner },
+      { label:'WEP', checked: d.role.wep },
+      { label:'NWEP', checked: d.role.nwep },
+      { label:'Pilot Director', checked: d.role.pilotdir },
+      { label:'Actor', checked: d.role.actor },
+      { label:'Script Supervisor', checked: d.role.scriptsup },
+      { label:'Producer', checked: d.role.producer },
+      { label:'Consultant', checked: d.role.consultant }
+    ], 2);
+    checkboxWithText('Other:', d.role.other, d.role.otherText);
+
+    sectionTitle('Services / Steps');
+    checkboxGrid([
+      { label:'Pitch Document', checked: d.services.pitch },
+      { label:'Pilot Script (WGA)', checked: d.services.pilotwga },
+      { label:'Pilot Script (WGC)', checked: d.services.pilotwgc },
+      { label:'Format (WGA)', checked: d.services.formatwga },
+      { label:'Bible (WGA)', checked: d.services.biblewga },
+      { label:'Bible (WGC)', checked: d.services.biblewgc },
+      { label:'Polish', checked: d.services.polish },
+      { label:'Pilot Rewrite', checked: d.services.rewrite },
+      { label:'Backup Script', checked: d.services.backup }
+    ], 2);
+    checkboxWithText('Other:', d.services.other, d.services.otherText);
+
+    sectionTitle('Deadlines & Attendance');
+    longText('Deadlines to Be Aware Of', d.deadlines);
+    longText('People in Attendance at Initial Pitch to B49', d.attendance);
+
+    sectionTitle('JV Project');
+    ensureSpace(18);
+    checkbox(margin, y, !d.jv.yes);
+    doc.setFont('helvetica','normal');
+    doc.setFontSize(10);
+    doc.text('No', margin + 14, y);
+    checkbox(margin + 70, y, d.jv.yes);
+    doc.text('Yes', margin + 84, y);
+    y += 20;
+    if(d.jv.yes){
+      const jvList = d.jv.selected.slice();
+      if(d.jv.other && d.jv.otherText) jvList.push(`Other: ${d.jv.otherText}`);
+      else if(d.jv.other) jvList.push('Other');
+      if(jvList.length){
+        doc.setFont('helvetica','bold');
+        doc.setFontSize(8.5);
+        doc.setTextColor(90,90,90);
+        ensureSpace(14);
+        doc.text('LIST JV', margin, y);
+        y += 12;
+        doc.setFont('helvetica','normal');
+        doc.setFontSize(10);
+        doc.setTextColor(20,20,20);
+        const text = jvList.join('  •  ');
+        const lines = doc.splitTextToSize(text, contentWidth);
+        lines.forEach(line => { ensureSpace(14); doc.text(line, margin, y); y += 13.5; });
+        y += 6;
+      } else {
+        doc.setFont('helvetica','italic');
+        doc.setFontSize(10);
+        doc.setTextColor(120,120,120);
+        ensureSpace(14);
+        doc.text('Marked yes, but no JV partner selected.', margin, y);
+        y += 18;
+      }
+    }
+
+    sectionTitle('Auspices Already Attached');
+    longText('Producers, Overalls/First Looks, etc.', d.auspices);
+
+    sectionTitle('Comparable Deals / Fee Range');
+    longText('If Known', d.comps);
+
+    sectionTitle('Additional Notes');
+    longText('Notes', d.notes);
+  }
+
+  function buildUnscripted(){
+    sectionTitle('Project');
+    fieldRow([
+      { label:'Project Name', value: d.project },
+      { label:'Artist / Entity to Contract For', value: d.artist }
+    ]);
+    longText('Logline', d.u_logline);
+    fieldRow([
+      { label:'Citizenship', value: d.citizenship },
+      { label:'Residency', value: d.residency }
+    ]);
+
+    doc.setFont('helvetica','bold');
+    doc.setFontSize(8.5);
+    doc.setTextColor(90,90,90);
+    ensureSpace(14);
+    doc.text('PROJECT TYPE', margin, y);
+    y += 14;
+    checkboxGrid([
+      { label:'Reality', checked: d.u_projectType.reality },
+      { label:'Docuseries', checked: d.u_projectType.docuseries },
+      { label:'Documentary Film', checked: d.u_projectType.docfilm },
+      { label: d.u_projectType.otherText ? `Other: ${d.u_projectType.otherText}` : 'Other', checked: d.u_projectType.other }
+    ], 2);
+
+    doc.setFont('helvetica','bold');
+    doc.setFontSize(8.5);
+    doc.setTextColor(90,90,90);
+    ensureSpace(14);
+    doc.text('INTENDED INITIAL MARKET', margin, y);
+    y += 14;
+    checkboxGrid([
+      { label:'CAD', checked: d.u_market.cad },
+      { label:'US', checked: d.u_market.us },
+      { label: d.u_market.otherText ? `Other: ${d.u_market.otherText}` : 'Other', checked: d.u_market.other }
+    ], 3);
+
+    longText('Potential Outlets/Networks', d.u_outlets);
+
+    sectionTitle('Artist Reps');
+    renderRepsToPdf();
+
+    sectionTitle('Auspices Already Attached');
+    longText('Producers, Overalls/First Looks, etc.', d.auspices);
+
+    sectionTitle('Existing Underlying Materials');
+    longText('If Any', d.u_underlying);
+
+    sectionTitle('Deal Type');
+    checkboxGrid([
+      { label:'Shopping Agmt', checked: d.u_dealType.shopping },
+      { label:'Co-Production', checked: d.u_dealType.coproduction },
+      { label:'Talent Attachment', checked: d.u_dealType.talent },
+      { label:'Option Agmt', checked: d.u_dealType.option },
+      { label:'First Look/Overall', checked: d.u_dealType.firstlook }
+    ], 2);
+    checkboxWithText('Other:', d.u_dealType.other, d.u_dealType.otherText);
+
+    sectionTitle('Role');
+    checkboxGrid([
+      { label:'Showrunner', checked: d.u_role.showrunner },
+      { label:'EP', checked: d.u_role.ep },
+      { label:'Passive EP', checked: d.u_role.passiveep },
+      { label:'Director', checked: d.u_role.director },
+      { label:'On-Camera Talent', checked: d.u_role.oncamera }
+    ], 2);
+    checkboxWithText('Other:', d.u_role.other, d.u_role.otherText);
+
+    sectionTitle('Deal Parameters');
+    const p = d.u_params;
+    fieldRow([{ label:'Term Length', value: p.term }, { label:'Expected Option Spend', value: p.optionspend }]);
+    fieldRow([{ label:'Who Created Concept/Idea', value: p.whocreated }]);
+    ensureSpace(18);
+    const dmLabel = p.devmaterials === 'yes' ? 'Yes' : (p.devmaterials === 'no' ? 'No' : '—');
+    checkbox(margin, y, p.devmaterials === 'yes');
+    doc.setFont('helvetica','normal'); doc.setFontSize(10); doc.setTextColor(20,20,20);
+    doc.text('Y', margin + 14, y);
+    checkbox(margin + 50, y, p.devmaterials === 'no');
+    doc.text('N', margin + 64, y);
+    doc.setFont('helvetica','bold'); doc.setFontSize(8.5); doc.setTextColor(90,90,90);
+    doc.text('DO WE NEED ARTIST TO DELIVER DEVELOPMENT MATERIALS?', margin + 90, y - 9);
+    doc.setFont('helvetica','normal'); doc.setFontSize(10); doc.setTextColor(20,20,20);
+    if(p.devmaterialsList) doc.text(`List: ${p.devmaterialsList}`, margin + 90, y + 4);
+    y += 22;
+    fieldRow([{ label:'Reversion', value: p.reversion }, { label:'EP Fee', value: p.epfee }]);
+    fieldRow([{ label:'Line Item Fee (if any)', value: p.lineitemfee }, { label:'Backend', value: p.backend }]);
+    fieldRow([{ label:'Credits (Producing, Logo)', value: p.credits }, { label:'Lock (Series, Spin-offs/Derivatives?)', value: p.lock }]);
+    fieldRow([{ label:'Creative Approval Level', value: p.creativeapproval }, { label:'Level of Exclusivity', value: p.exclusivity }]);
+    fieldRow([{ label:'Does Artist Have a Business We Need Exclusivity/Access To', value: p.artistbusiness }]);
+
+    sectionTitle('Deadlines & Attendance');
+    longText('Deadlines to Be Aware Of', d.deadlines);
+    longText('People in Attendance at Initial Pitch to B49', d.attendance);
+
+    sectionTitle('Comparable Deals / Fee Range');
+    longText('If Known', d.comps);
+
+    sectionTitle('Documentary Only Additional Info');
+    const doc_ = d.u_doc;
+    fieldRow([{ label:'Subject of Documentary (if person)', value: doc_.subject }]);
+    fieldRow([{ label:"Subject's Compensation (if any)", value: doc_.subjectcomp }]);
+    fieldRow([{ label:'Is Blink49 Funding the Pitch (if partial, what amount)', value: doc_.funding }]);
+    fieldRow([{ label:'Outside Partners/Financiers', value: doc_.partners }]);
+    fieldRow([{ label:'Is the Subject Matter Controversial', value: doc_.controversial }]);
+    fieldRow([{ label:'Active Litigation, Trial, or Criminal Investigation?', value: doc_.litigation }]);
+    fieldRow([{ label:'Will the Series Rely on Archival Materials? (list type)', value: doc_.archival }]);
+
+    sectionTitle('Additional Notes');
+    longText('Notes', d.notes);
+  }
+
+  function renderRepsToPdf(){
+    if(!d.reps.length){
+      doc.setFont('helvetica','italic');
+      doc.setFontSize(10);
+      doc.setTextColor(120,120,120);
+      ensureSpace(16);
+      doc.text('No reps listed.', margin, y);
+      y += 18;
+      return;
+    }
     d.reps.forEach(rep => {
       ensureSpace(40);
       doc.setFont('helvetica','bold');
@@ -936,104 +1440,6 @@ function generatePDF(){
       ]);
     });
   }
-
-  // Deal type
-  sectionTitle('Deal Type');
-  checkboxGrid([
-    { label:'If/Come', checked: d.dealType.ifcome },
-    { label:'Dev. Commitment (with $)', checked: d.dealType.devwith },
-    { label:'Dev. Commitment (w/out $)', checked: d.dealType.devwithout },
-    { label:'Shopping Agmt', checked: d.dealType.shopping },
-    { label:'Option (Literary)', checked: d.dealType.optlit },
-    { label:'Option (Life Rights)', checked: d.dealType.optlife },
-    { label:'Option (Script)', checked: d.dealType.optscript },
-    { label:'First Look', checked: d.dealType.firstlook },
-    { label:'Overall', checked: d.dealType.overall },
-    { label:'Blind Script', checked: d.dealType.blind }
-  ], 2);
-  checkboxWithText('Other:', d.dealType.other, d.dealType.otherText);
-
-  // Role
-  sectionTitle('Role');
-  checkboxGrid([
-    { label:'Showrunner', checked: d.role.showrunner },
-    { label:'WEP', checked: d.role.wep },
-    { label:'NWEP', checked: d.role.nwep },
-    { label:'Pilot Director', checked: d.role.pilotdir },
-    { label:'Actor', checked: d.role.actor },
-    { label:'Script Supervisor', checked: d.role.scriptsup },
-    { label:'Producer', checked: d.role.producer },
-    { label:'Consultant', checked: d.role.consultant }
-  ], 2);
-  checkboxWithText('Other:', d.role.other, d.role.otherText);
-
-  // Services
-  sectionTitle('Services / Steps');
-  checkboxGrid([
-    { label:'Pitch Document', checked: d.services.pitch },
-    { label:'Pilot Script (WGA)', checked: d.services.pilotwga },
-    { label:'Pilot Script (WGC)', checked: d.services.pilotwgc },
-    { label:'Format (WGA)', checked: d.services.formatwga },
-    { label:'Bible (WGA)', checked: d.services.biblewga },
-    { label:'Bible (WGC)', checked: d.services.biblewgc },
-    { label:'Polish', checked: d.services.polish },
-    { label:'Pilot Rewrite', checked: d.services.rewrite },
-    { label:'Backup Script', checked: d.services.backup }
-  ], 2);
-  checkboxWithText('Other:', d.services.other, d.services.otherText);
-
-  // Deadlines / attendance
-  sectionTitle('Deadlines & Attendance');
-  longText('Deadlines to Be Aware Of', d.deadlines);
-  longText('People in Attendance at Initial Pitch to B49', d.attendance);
-
-  // JV
-  sectionTitle('JV Project');
-  ensureSpace(18);
-  checkbox(margin, y, !d.jv.yes);
-  doc.setFont('helvetica','normal');
-  doc.setFontSize(10);
-  doc.text('No', margin + 14, y);
-  checkbox(margin + 70, y, d.jv.yes);
-  doc.text('Yes', margin + 84, y);
-  y += 20;
-  if(d.jv.yes){
-    const jvList = d.jv.selected.slice();
-    if(d.jv.other && d.jv.otherText) jvList.push(`Other: ${d.jv.otherText}`);
-    else if(d.jv.other) jvList.push('Other');
-    if(jvList.length){
-      doc.setFont('helvetica','bold');
-      doc.setFontSize(8.5);
-      doc.setTextColor(90,90,90);
-      ensureSpace(14);
-      doc.text('LIST JV', margin, y);
-      y += 12;
-      doc.setFont('helvetica','normal');
-      doc.setFontSize(10);
-      doc.setTextColor(20,20,20);
-      const text = jvList.join('  •  ');
-      const lines = doc.splitTextToSize(text, contentWidth);
-      lines.forEach(line => { ensureSpace(14); doc.text(line, margin, y); y += 13.5; });
-      y += 6;
-    } else {
-      doc.setFont('helvetica','italic');
-      doc.setFontSize(10);
-      doc.setTextColor(120,120,120);
-      ensureSpace(14);
-      doc.text('Marked yes, but no JV partner selected.', margin, y);
-      y += 18;
-    }
-  }
-
-  // Auspices / comps / notes
-  sectionTitle('Auspices Already Attached');
-  longText('Producers, Overalls/First Looks, etc.', d.auspices);
-
-  sectionTitle('Comparable Deals / Fee Range');
-  longText('If Known', d.comps);
-
-  sectionTitle('Additional Notes');
-  longText('Notes', d.notes);
 
   // Footer page numbers
   const pageCount = doc.internal.getNumberOfPages();
